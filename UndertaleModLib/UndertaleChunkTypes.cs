@@ -71,10 +71,8 @@ namespace UndertaleModLib
                 Type type = Type.GetType(typeof(UndertaleChunk).FullName + name);
                 if (type == null)
                 {
-                    throw new IOException("Unknown chunk " + name + "!!!");
-                    /*Debug.WriteLine("Unknown chunk " + name + "!!!");
                     reader.Position = reader.Position + length;
-                    return null;*/
+                    return null;
                 }
 
                 UndertaleChunk chunk = (UndertaleChunk)Activator.CreateInstance(type);

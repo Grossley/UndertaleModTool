@@ -50,8 +50,11 @@ namespace UndertaleModLib.Models
         public void UnserializeBlob(UndertaleReader reader)
         {
             while (reader.Position % 0x80 != 0)
+            {
                 if (reader.ReadByte() != 0)
-                    throw new IOException("Padding error!");
+                {
+                }
+            }
 
             reader.ReadUndertaleObject(TextureData);
         }

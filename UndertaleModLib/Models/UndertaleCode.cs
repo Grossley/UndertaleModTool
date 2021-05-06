@@ -117,7 +117,7 @@ namespace UndertaleModLib.Models
                     return InstructionType.BreakInstruction;
 
                 default:
-                    throw new IOException("Unknown opcode " + op.ToString().ToUpper());
+                    return UndertaleInstruction.InstructionType.BreakInstruction;
             }
         }
 
@@ -199,7 +199,7 @@ namespace UndertaleModLib.Models
                     return 0;
 
                 default:
-                    throw new IOException("Unknown opcode " + instr.Kind.ToString().ToUpper());
+                    return 0;
             }
         }
 
@@ -398,11 +398,14 @@ namespace UndertaleModLib.Models
                 for (int i = 0; i < obj.Occurrences; i++)
                 {
                     reference = reader.GetUndertaleObjectAtAddress<UndertaleInstruction>(addr).GetReference<T>(obj is UndertaleFunction);
-                    if (reference == null)
-                        throw new IOException("Failed to find reference at " + addr);
-                    reference.Target = obj;
-                    addr += (uint)reference.NextOccurrenceOffset;
+                    if (reference != null)
+                    {
+                        reference.Target = obj;
+                        addr += (uint)reference.NextOccurrenceOffset;
+                    }
                 }
+                if (reference == null)
+                    return;
                 obj.UnknownChainEndingValue = (int)reference.NextOccurrenceOffset;
             }
         }
@@ -652,9 +655,6 @@ namespace UndertaleModLib.Models
                         writer.Write((byte)Kind);
                     }
                     break;
-
-                default:
-                    throw new IOException("Unknown opcode " + Kind.ToString().ToUpper());
             }
         }
 
@@ -909,9 +909,6 @@ namespace UndertaleModLib.Models
                         if (reader.ReadByte() != (byte)Kind) throw new Exception("really shouldn't happen");
                     }
                     break;
-
-                default:
-                    throw new IOException("Unknown opcode " + Kind.ToString().ToUpper());
             }
         }
 

@@ -318,10 +318,10 @@ namespace UndertaleModLib.Decompiler
                         {
                             if (i.Kind == UndertaleInstruction.Opcode.PushI)
                                 return (UndertaleInstruction.InstanceType?)(short)i.Value;
-                            else if (i.Kind == UndertaleInstruction.Opcode.Dup)
+                            else// if (i.Kind == UndertaleInstruction.Opcode.Dup)
                                 stackCounter += 1 + i.Extra; // Keep looking for the value that was duplicated
-                            else
-                                throw new Exception("My workaround still sucks");
+                            //else
+                                //throw new Exception("My workaround still sucks");
                         }
                     }
                     return null;

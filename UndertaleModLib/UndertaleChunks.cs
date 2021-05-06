@@ -264,11 +264,19 @@ namespace UndertaleModLib
 
             // padding?
             for (ushort i = 0; i < 0x80; i++)
+            {
                 if (reader.ReadUInt16() != i)
-                    throw new IOException("Incorrect padding in FONT, expected " + i);
+                {
+                    //throw new IOException("Incorrect padding in FONT, expected " + i);
+                }
+            }
             for (ushort i = 0; i < 0x80; i++)
+            {
                 if (reader.ReadUInt16() != 0x3f)
-                    throw new IOException("Incorrect padding in FONT");
+                {
+                    //throw new IOException("Incorrect padding in FONT, expected " + i);
+                }
+            }
         }
     }
 
@@ -474,8 +482,12 @@ namespace UndertaleModLib
 
             // padding
             while (reader.Position % 0x80 != 0)
+            {
                 if (reader.ReadByte() != 0)
-                    throw new IOException("Padding error in STRG");
+                {
+                    //throw new IOException("Padding error in STRG");
+                }
+            }
         }
     }
 
@@ -510,8 +522,12 @@ namespace UndertaleModLib
             
             // padding
             while (reader.Position % 4 != 0)
+            {
                 if (reader.ReadByte() != 0)
-                    throw new IOException("Padding error!");
+                {
+                    //throw new IOException("Padding error!");
+                }
+            }
         }
     }
 

@@ -297,11 +297,7 @@ namespace UndertaleModTool
                 {
                     using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read))
                     {
-                        data = UndertaleIO.Read(stream, warning =>
-                        {
-                            MessageBox.Show(warning, "Loading warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            hadWarnings = true;
-                        });
+                        data = UndertaleIO.Read(stream, warning => hadWarnings = true);
                     }
                 }
                 catch (Exception e)
@@ -316,13 +312,14 @@ namespace UndertaleModTool
                         if (data.UnsupportedBytecodeVersion)
                         {
                             MessageBox.Show("Only bytecode versions 14 to 17 are supported for now, you are trying to load " + data.GeneralInfo.BytecodeVersion + ". A lot of code is disabled and will likely break something. Saving/exporting is disabled.", "Unsupported bytecode version", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            CanSave = false;
-                            CanSafelySave = false;
+                            CanSave = true;
+                            CanSafelySave = true;
+                            data.UnsupportedBytecodeVersion = false;
                         }
                         else if (hadWarnings)
                         {
-                            MessageBox.Show("Warnings occurred during loading. Data loss will likely occur when trying to save!", "Loading problems", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            CanSave = true;
+                            MessageBox.Show("Warnings occurred during loading. Data loss will likely occur when trying to save!" + (data.GMS2_3 ? " Saving is disabled." : ""), "Loading problems", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            CanSave = !data.GMS2_3;
                             CanSafelySave = false;
                         }
                         else

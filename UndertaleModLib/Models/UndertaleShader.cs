@@ -376,9 +376,10 @@ namespace UndertaleModLib.Models
 
             public void ReadData(UndertaleReader reader, int length)
             {
-                if (_Length != 0 && _Length != length)
-                    throw new UndertaleSerializationException("Failed to compute length of shader data");
 
+/*                if (_Length != 0 && _Length != length)
+                    throw new UndertaleSerializationException("Failed to compute length of shader data");
+*/
                 _Length = (uint)length;
                 Data = reader.ReadBytes(length);
             }

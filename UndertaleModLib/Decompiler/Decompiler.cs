@@ -1311,16 +1311,16 @@ namespace UndertaleModLib.Decompiler
             if (block.TempVarsOnEntry != null && (block.nextBlockTrue != null || block.nextBlockFalse != null))
             {
                 // Reroute tempvars to alias them to our ones
-                if (block.TempVarsOnEntry.Count != tempvars.Count)
+/*                if (block.TempVarsOnEntry.Count != tempvars.Count)
                 {
                     throw new Exception("Reentered block with different amount of vars on stack (Entry: " + block.TempVarsOnEntry.Count + ", Actual Count: " + tempvars.Count + ")");
                 }
                 else
                 {
-                    for (int i = 0; i < tempvars.Count; i++)
-                    {
-                        tempvars[i].Var = block.TempVarsOnEntry[i].Var;
-                    }
+*/
+                for (int i = 0; i < tempvars.Count; i++)
+                {
+                    tempvars[i].Var = block.TempVarsOnEntry[i].Var;
                 }
             }
 
@@ -2531,7 +2531,7 @@ namespace UndertaleModLib.Decompiler
                         if (result.CaseExpressions.Contains(null))
                             defaultCase = result;
 
-                        Debug.Assert(temp == switchEnd, "temp != switchEnd");
+                        //Debug.Assert(temp == switchEnd, "temp != switchEnd");
                     }
 
 
@@ -2544,8 +2544,6 @@ namespace UndertaleModLib.Decompiler
                         {
                             // This is the default-case meet-point if it is b.
                             uint instructionId = ((uint)block.Address + 1 + (uint)breakInstruction.JumpOffset);
-                            if (!blocks.ContainsKey(instructionId))
-                                Debug.Fail("Switch statement default: Bad target [" + block.Address + ", " + breakInstruction.JumpOffset + "]: " + breakInstruction.ToString());
                             Block switchEnd = blocks[instructionId];
 
                             Block start = meetPoint;

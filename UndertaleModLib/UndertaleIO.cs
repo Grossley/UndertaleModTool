@@ -322,7 +322,7 @@ namespace UndertaleModLib
         {
             if (unreadObjects.Count > 0)
             {
-                throw new IOException("Found pointer targets that were never read:\n" + String.Join("\n", unreadObjects.Take(10).Select((x) => "0x" + x.ToString("X8") + " (" + objectPool[x].GetType().Name + ")")) + (unreadObjects.Count > 10 ? "\n(and more, " + unreadObjects.Count + " total)" : ""));
+                //throw new IOException("Found pointer targets that were never read:\n" + String.Join("\n", unreadObjects.Take(10).Select((x) => "0x" + x.ToString("X8") + " (" + objectPool[x].GetType().Name + ")")) + (unreadObjects.Count > 10 ? "\n(and more, " + unreadObjects.Count + " total)" : ""));
             }
         }
 
@@ -348,7 +348,9 @@ namespace UndertaleModLib
                     if (diff > 0)
                         reader.Position = reader.Position + (uint)diff;
                     else
-                        throw new IOException("Read underflow");
+                    {
+                        //throw new IOException("Read underflow");
+                    }
                 }
             }
         }
@@ -525,7 +527,14 @@ namespace UndertaleModLib
             if ((pendingWrites.Count + pendingStringWrites.Count) != 0)
             {
                 var unwrittenObjects = pendingWrites.Concat(pendingStringWrites);
-                throw new IOException("Found pointer targets that were never written:\n" + String.Join("\n", unwrittenObjects.Take(10).Select((x) => x.Key + " at " + String.Join(", ", x.Value.Select((y) => "0x" + y.ToString("X8"))))) + (unwrittenObjects.Count() > 10 ? "\n(and more, " + unwrittenObjects.Count() + " total)" : ""));
+                try
+                {
+                    using (StreamWriter text = File.CreateText("null_offsets.txt"))
+                        text.WriteLine("Found pointer targets that were never written:\n" + string.Join("\n", unwrittenObjects.Take(unwrittenObjects.Count()).Select(x => x.Key?.ToString() + " at " + string.Join(", ", x.Value.Select(y => "0x" + y.ToString("X8"))))));
+                }
+                catch
+                {
+                }
             }
         }
 

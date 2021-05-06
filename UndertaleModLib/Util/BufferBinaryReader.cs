@@ -238,16 +238,16 @@ namespace UndertaleModLib.Util
                 NextBuffer();
             int length = (int)(buffer[bufferOffset++] | buffer[bufferOffset++] << 8 | buffer[bufferOffset++] << 16 | buffer[bufferOffset++] << 24);
             offset += 4;
-            if (bufferOffset + length + 1 >= bufferSize)
+            if (bufferOffset + length + 128 >= bufferSize) // Extra padding for safety
                 NextBuffer();
+            length = 0;
+            for (int i = bufferOffset; buffer[i] != 0; i++)
+                length++;
             string res = encoding.GetString(buffer, bufferOffset, length);
-            bufferOffset += length;
-            if (buffer[bufferOffset++] != 0)
-                throw new IOException("String not null terminated!");
             offset += length + 1;
+            bufferOffset += length + 1;
             return res;
         }
-
         public void Dispose()
         {
             stream.Close();
