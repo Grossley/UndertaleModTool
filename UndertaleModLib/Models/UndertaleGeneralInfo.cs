@@ -293,7 +293,7 @@ namespace UndertaleModLib.Models
                 GMS2AllowStatistics = reader.ReadBoolean();
                 GMS2GameGUID = reader.ReadBytes(16);
             }
-            reader.undertaleData.UnsupportedBytecodeVersion = BytecodeVersion < 14 || BytecodeVersion > 17;
+            reader.undertaleData.UnsupportedBytecodeVersion = (BytecodeVersion < 13 || BytecodeVersion > 17);
             reader.Bytecode14OrLower = BytecodeVersion <= 14;
         }
 

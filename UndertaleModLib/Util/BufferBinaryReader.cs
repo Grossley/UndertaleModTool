@@ -184,9 +184,5 @@ namespace UndertaleModLib.Util
             Offset += length + 1;
             return res;
         }
-        public void Dispose()
-        {
-            stream.Close();
-        }
     }
 }
