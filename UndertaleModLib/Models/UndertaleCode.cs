@@ -415,7 +415,7 @@ namespace UndertaleModLib.Models
 
                         if (writer.Bytecode14OrLower)
                         {
-                            var k = Kind switch
+                            byte k = Kind switch
                             {
                                 Opcode.Conv => 0x03,
                                 Opcode.Mul => 0x04,
@@ -1228,14 +1228,8 @@ namespace UndertaleModLib.Models
                 throw new Exception("GML Compile Error: " + context.ResultError);
             }
 
-            try
-            {
-                this.Append(Assembler.Assemble(context.ResultAssembly, data));
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Assembler Error: " + ex.ToString());
-            }
+            Append(context.ResultAssembly);
+
             try
             {
                 // Attempt to write text in all modes, because this is a special case.
@@ -1260,14 +1254,9 @@ namespace UndertaleModLib.Models
                 Console.WriteLine(gmlCode);
                 throw new Exception("GML Compile Error: " + context.ResultError);
             }
-            try
-            {
-                this.Replace(Assembler.Assemble(context.ResultAssembly, data));
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Assembler Error: " + ex.ToString());
-            }
+
+            Replace(context.ResultAssembly);
+
             try
             {
                 // When necessary, write to profile.

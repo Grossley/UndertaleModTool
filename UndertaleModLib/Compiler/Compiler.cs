@@ -26,7 +26,7 @@ namespace UndertaleModLib.Compiler
         public bool SuccessfulCompile = false;
         public bool HasError = false;
         public string ResultError = null;
-        public string ResultAssembly = null;
+        public List<UndertaleInstruction> ResultAssembly = null;
 
         public Compiler.MainThreadDelegate MainThreadDelegate = (f) => { f(); };
 
@@ -59,12 +59,6 @@ namespace UndertaleModLib.Compiler
         {
             HasError = true;
             ResultError = error;
-
-            string[] split = error.Split('\n');
-            StringBuilder sb = new StringBuilder();
-            foreach (string line in split)
-                sb.Append("; " + line + "\n");
-            ResultAssembly = sb.ToString();
         }
 
         public void Setup(bool redoAssets = false)
@@ -157,6 +151,7 @@ namespace UndertaleModLib.Compiler
         public static CompileContext CompileGMLText(string input, CompileContext context, bool redoAssets = false)
         {
             context.Setup(redoAssets); // Set up
+
             List<Lexer.Token> tokens = Lexer.LexString(context, input); // Peform lexical analysis
             Parser.Statement block = Parser.ParseTokens(context, tokens); // Parse tokens, make syntax tree
 
@@ -189,8 +184,6 @@ namespace UndertaleModLib.Compiler
                 sb.AppendLine();
                 foreach (string msg in codeWriter.ErrorMessages)
                     sb.AppendLine(msg);
-                sb.AppendLine();
-                sb.Append(context.ResultAssembly);
                 context.SetError(sb.ToString());
                 return context;
             }
