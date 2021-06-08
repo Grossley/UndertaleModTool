@@ -93,7 +93,7 @@ namespace UndertaleModLib.Models
                 Opcode.Call => InstructionType.CallInstruction,
                 Opcode.Break => InstructionType.BreakInstruction,
 
-                _ => throw new IOException("Unknown opcode " + op.ToString().ToUpper()),
+                _ => InstructionType.BreakInstruction,//throw new IOException("Unknown opcode " + op.ToString().ToUpper()),
             };
         }
 
@@ -307,7 +307,7 @@ namespace UndertaleModLib.Models
                             try
                             {
                                 var ab = reader.GetUndertaleObjectAtAddress<Reference<UndertaleVariable>>(addr);
-                                throw new IOException("Reference<UndertaleVariable> ADDR: " + addr + " Next: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null") + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null") + " Target: " + (ab.Target != null ? ab.Target.ToString() : "null") + " Name: " + ab.ToString());
+                                throw new IOException("Reference<UndertaleVariable> ADDR: " + addr.ToString("X8") + " Next: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null") + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null") + " Target: " + (ab.Target != null ? ab.Target.ToString() : "null") + " Name: " + ab.ToString());
                             }
                             catch (InvalidCastException ex)
                             {
@@ -316,19 +316,19 @@ namespace UndertaleModLib.Models
                                     var abc = reader.GetUndertaleObjectAtAddress<UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>>(addr);
                                     string CachedIdString = (abc.CachedId != null ? abc.CachedId.ToString() : "null");
                                     string ResourceString = (abc.Resource != null ? abc.Resource.ToString() : "null");
-                                    throw new IOException("UndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr + " CachedIdString: " + CachedIdString + " ResourceString: " + ResourceString + " Target: " + (abc.Resource?.ToString()));
+                                    throw new IOException("UndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr.ToString("X8") + " CachedIdString: " + CachedIdString + " ResourceString: " + ResourceString + " Target: " + (abc.Resource?.ToString()));
                                 }
                                 catch (InvalidCastException exc)
                                 {
                                     try
                                     {
                                         var abcd = reader.GetUndertaleObjectAtAddress<Reference<UndertaleFunction>>(addr);
-                                        throw new IOException("Reference<UndertaleFunction> ADDR: " + addr + " Next: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null") + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null") + " Target: " + (abcd.Target != null ? abcd.Target.ToString() : "null") + " Name: " + abcd.ToString());
+                                        throw new IOException("Reference<UndertaleFunction> ADDR: " + addr.ToString("X8") + " Next: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null") + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null") + " Target: " + (abcd.Target != null ? abcd.Target.ToString() : "null") + " Name: " + abcd.ToString());
                                     }
                                     catch (InvalidCastException exce)
                                     {
                                         var abcde = reader.GetUndertaleObjectAtAddress<UndertaleCode>(addr);
-                                        throw new IOException("UndertaleCode ADDR: " + addr 
+                                        throw new IOException("UndertaleCode ADDR: " + addr.ToString("X8")
                                         + " Name: " + (abcde.Name != null ? abcde.Name.Content : "null") 
                                         + " Length: " + (abcde.Length != null ? abcde.Length.ToString() : "null") 
                                         + " Locals Count: " + (abcde.LocalsCount != null ? abcde.LocalsCount.ToString() : "null") 
@@ -566,8 +566,8 @@ namespace UndertaleModLib.Models
                     }
                     break;
 
-                default:
-                    throw new IOException("Unknown opcode " + Kind.ToString().ToUpper());
+                //default:
+                    //throw new IOException("Unknown opcode " + Kind.ToString().ToUpper());
             }
         }
 
@@ -835,8 +835,8 @@ namespace UndertaleModLib.Models
                     }
                     break;
 
-                default:
-                    throw new IOException("Unknown opcode " + Kind.ToString().ToUpper());
+                //default:
+                //    throw new IOException("Unknown opcode " + Kind.ToString().ToUpper());
             }
         }
 
@@ -852,7 +852,12 @@ namespace UndertaleModLib.Models
             string kind = Kind.ToString();
             var type = GetInstructionType(Kind);
             if (type == InstructionType.BreakInstruction)
-                kind = Assembler.BreakIDToName[(short)Value];
+            {
+                if (Value != null)
+                    kind = Assembler.BreakIDToName[(short)Value];
+                else
+                    kind = kind.ToLower();
+            }
             else
                 kind = kind.ToLower();
             sb.Append(kind);
