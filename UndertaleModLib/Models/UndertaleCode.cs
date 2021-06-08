@@ -307,7 +307,11 @@ namespace UndertaleModLib.Models
                             try
                             {
                                 var ab = reader.GetUndertaleObjectAtAddress<Reference<UndertaleVariable>>(addr);
-                                throw new IOException("Reference<UndertaleVariable> ADDR: " + addr.ToString("X8") + " Next: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null") + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null") + " Target: " + (ab.Target != null ? ab.Target.ToString() : "null") + " Name: " + ab.ToString());
+                                throw new IOException("Reference<UndertaleVariable> ADDR: " + addr.ToString("X8") 
+                                + " Next: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null") 
+                                + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null") 
+                                + " Target: " + (ab.Target != null ? ab.Target.ToString() : "null") 
+                                + " Name: " + ab.ToString());
                             }
                             catch (InvalidCastException ex)
                             {
@@ -316,14 +320,21 @@ namespace UndertaleModLib.Models
                                     var abc = reader.GetUndertaleObjectAtAddress<UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>>(addr);
                                     string CachedIdString = (abc.CachedId != null ? abc.CachedId.ToString() : "null");
                                     string ResourceString = (abc.Resource != null ? abc.Resource.ToString() : "null");
-                                    throw new IOException("UndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr.ToString("X8") + " CachedIdString: " + CachedIdString + " ResourceString: " + ResourceString + " Target: " + (abc.Resource?.ToString()));
+                                    throw new IOException("UndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr.ToString("X8") 
+                                    + " CachedIdString: " + CachedIdString 
+                                    + " ResourceString: " + ResourceString 
+                                    + " Target: " + (abc.Resource?.ToString()));
                                 }
                                 catch (InvalidCastException exc)
                                 {
                                     try
                                     {
                                         var abcd = reader.GetUndertaleObjectAtAddress<Reference<UndertaleFunction>>(addr);
-                                        throw new IOException("Reference<UndertaleFunction> ADDR: " + addr.ToString("X8") + " Next: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null") + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null") + " Target: " + (abcd.Target != null ? abcd.Target.ToString() : "null") + " Name: " + abcd.ToString());
+                                        throw new IOException("Reference<UndertaleFunction> ADDR: " + addr.ToString("X8") 
+                                        + " Next: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null") 
+                                        + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null") 
+                                        + " Target: " + (abcd.Target != null ? abcd.Target.ToString() : "null") 
+                                        + " Name: " + abcd.ToString());
                                     }
                                     catch (InvalidCastException exce)
                                     {
