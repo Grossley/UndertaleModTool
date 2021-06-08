@@ -1410,38 +1410,22 @@ namespace UndertaleModLib.Decompiler
                 }
 
                 AssetIDType current;
-                try
-                {
+                if (Var != null)
                     current = context.assetTypes.ContainsKey(Var) ? context.assetTypes[Var] : AssetIDType.Other;
-                }
-                catch
-                {
+                else
                     current = AssetIDType.Other;
-                }
                 if (current == AssetIDType.Other && suggestedType != AssetIDType.Other)
                     current = suggestedType;
                 AssetIDType builtinSuggest;
-                try
-                {
+                if (Var != null)
                     builtinSuggest = AssetTypeResolver.AnnotateTypeForVariable(context, Var.Name.Content);
-                }
-                catch
-                {
+                else
                     builtinSuggest = AssetIDType.Other;
-                }
                 if (builtinSuggest != AssetIDType.Other)
                     current = builtinSuggest;
 
-                if ((VarType != UndertaleInstruction.VariableType.Array || (ArrayIndices != null && !(ArrayIndices[0] is ExpressionConstant))))
-                {
-                    try
-                    {
-                        context.assetTypes[Var] = current; // This is a messy fix to arrays messing up exported variable types
-                    }
-                    catch
-                    {
-                    }
-                }
+                if (Var != null && (VarType != UndertaleInstruction.VariableType.Array || (ArrayIndices != null && !(ArrayIndices[0] is ExpressionConstant))))
+                    context.assetTypes[Var] = current; // This is a messy fix to arrays messing up exported variable types
                 return current;
             }
 
