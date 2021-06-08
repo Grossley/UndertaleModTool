@@ -56,6 +56,7 @@ namespace UndertaleModLib
 
         public bool UnsupportedBytecodeVersion = false;
         public bool IsTPAG4ByteAligned = false;
+        public bool ShortCircuit = true;
         public bool GMS2_2_2_302 = false;
         public bool GMS2_3 = false;
         public bool GMS2_3_1 = false;
@@ -323,13 +324,13 @@ namespace UndertaleModLib
             bool bytecode14 = (data?.GeneralInfo?.BytecodeVersion <= 14);
             if (bytecode14)
                 inst = UndertaleInstruction.InstanceType.Undefined;
-            UndertaleVariable vari = list.Where((x) => x.Name.Content == name && x.InstanceType == inst).FirstOrDefault();
+            UndertaleVariable vari = list.Where((x) => x.Name?.Content == name && x.InstanceType == inst).FirstOrDefault();
             if (vari == null)
             {
                 var oldId = data.VarCount1;
                 if (!bytecode14)
                 {
-                    if (data.DifferentVarCounts)
+                    if (!data.DifferentVarCounts)
                     { 
                         // Bytecode 16+
                         data.VarCount1++;

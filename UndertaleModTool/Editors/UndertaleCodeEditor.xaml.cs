@@ -44,7 +44,7 @@ namespace UndertaleModTool
     {
         public UndertaleCode CurrentDisassembled = null;
         public UndertaleCode CurrentDecompiled = null;
-        public List<string> CurrentDecompiledLocals = null;
+        public List<string> CurrentLocals = null;
         public UndertaleCode CurrentGraphed = null;
         public string ProfileHash = (Application.Current.MainWindow as MainWindow).ProfileHash;
         public string MainPath = Path.Combine(Settings.ProfilesFolder, (Application.Current.MainWindow as MainWindow).ProfileHash, "Main");
@@ -73,6 +73,18 @@ namespace UndertaleModTool
                 using (XmlTextReader reader = new XmlTextReader(stream))
                 {
                     DecompiledEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                    if ((Application.Current.MainWindow as MainWindow).Data.GeneralInfo.Major < 2)
+                    {
+                        var def = DecompiledEditor.SyntaxHighlighting;
+                        foreach (var span in def.MainRuleSet.Spans)
+                        {
+                            string expr = span.StartExpression.ToString();
+                            if (expr == "\"" || expr == "'")
+                            {
+                                span.RuleSet.Spans.Clear();
+                            }
+                        }
+                    }
                 }
             }
 
@@ -107,6 +119,8 @@ namespace UndertaleModTool
                     DisassemblyEditor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                 }
             }
+
+            DisassemblyEditor.TextArea.TextView.ElementGenerators.Add(new NameGenerator());
 
             DisassemblyEditor.TextArea.TextView.Options.HighlightCurrentLine = true;
             DisassemblyEditor.TextArea.TextView.CurrentLineBackground = new SolidColorBrush(Color.FromRgb(60, 60, 60));
@@ -200,6 +214,8 @@ namespace UndertaleModTool
 
                 var data = (Application.Current.MainWindow as MainWindow).Data;
                 text = code.Disassemble(data.Variables, data.CodeLocals.For(code));
+
+                CurrentLocals = new List<string>();
             }
 
             DisassemblyEditor.Text = text;
@@ -288,7 +304,14 @@ namespace UndertaleModTool
                 {
                     dialog = new LoaderDialog("Decompiling", "Decompiling, please wait... This can take a while on complex scripts.");
                     dialog.Owner = Window.GetWindow(this);
-                    _ = Dispatcher.BeginInvoke(new Action(() => { if (!dialog.IsClosed) dialog.TryShowDialog(); }));
+                    try
+                    {
+                        _ = Dispatcher.BeginInvoke(new Action(() => { if (!dialog.IsClosed) dialog.TryShowDialog(); }));
+                    } 
+                    catch
+                    {
+                        // This is still a problem in rare cases for some unknown reason
+                    }
                 }
 
                 UndertaleCode gettextCode = null;
@@ -309,9 +332,10 @@ namespace UndertaleModTool
                         string path = Path.Combine(TempPath, code.Name.Content + ".gml");
                         if (!SettingsWindow.ProfileModeEnabled || !File.Exists(path))
                         {
-                            decompiled = Decompiler.Decompile(code, context).Replace("\r\n", "\n");
-                        } else
-                            decompiled = File.ReadAllText(path).Replace("\r\n", "\n");
+                            decompiled = Decompiler.Decompile(code, context);
+                        }
+                        else
+                            decompiled = File.ReadAllText(path);
                     }
                     catch (Exception ex)
                     {
@@ -391,13 +415,13 @@ namespace UndertaleModTool
                         else if (decompiled != null)
                         {
                             DecompiledEditor.Text = decompiled;
-                            CurrentDecompiledLocals = new List<string>();
+                            CurrentLocals = new List<string>();
 
                             var locals = dataa.CodeLocals.ByName(code.Name.Content);
                             if (locals != null)
                             {
                                 foreach (var local in locals.Locals)
-                                    CurrentDecompiledLocals.Add(local.Name.Content);
+                                    CurrentLocals.Add(local.Name.Content);
                             }
                         }
                         DecompiledEditor.IsReadOnly = false;
@@ -508,7 +532,14 @@ namespace UndertaleModTool
 
             LoaderDialog dialog = new LoaderDialog("Compiling", "Compiling, please wait...");
             dialog.Owner = Window.GetWindow(this);
-            _ = Dispatcher.BeginInvoke(new Action(() => { if (!dialog.IsClosed) dialog.TryShowDialog(); }));
+            try
+            {
+                _ = Dispatcher.BeginInvoke(new Action(() => { if (!dialog.IsClosed) dialog.TryShowDialog(); }));
+            }
+            catch
+            {
+                // This is still a problem in rare cases for some unknown reason
+            }
 
             CompileContext compileContext = null;
             string text = DecompiledEditor.Text;
@@ -926,7 +957,7 @@ namespace UndertaleModTool
                             data.BuiltinList.GlobalArray.ContainsKey(m.Value))
                             return new ColorVisualLineText(m.Value, CurrentContext.VisualLine, m.Length,
                                                             new SolidColorBrush(Color.FromRgb(0x58, 0xE3, 0x5A)));
-                        if ((parent as UndertaleCodeEditor).CurrentDecompiledLocals.Contains(m.Value))
+                        if ((parent as UndertaleCodeEditor).CurrentLocals.Contains(m.Value))
                             return new ColorVisualLineText(m.Value, CurrentContext.VisualLine, m.Length,
                                                             new SolidColorBrush(Color.FromRgb(0xFF, 0xF8, 0x99)));
                         return null;

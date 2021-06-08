@@ -252,7 +252,14 @@ namespace UndertaleModLib
         {
             base.SerializeChunk(writer);
 
-            writer.Write(Padding);
+            if (Padding == null)
+            {
+                for (ushort i = 0; i < 0x80; i++)
+                    writer.Write(i);
+                for (ushort i = 0; i < 0x80; i++)
+                    writer.Write((ushort)0x3f);
+            } else
+                writer.Write(Padding);
         }
 
         internal override void UnserializeChunk(UndertaleReader reader)
@@ -366,32 +373,6 @@ namespace UndertaleModLib
 
             if (!writer.Bytecode14OrLower)
             {
-                // Count instance/global variables, to make sure they're properly updated
-                if (DifferentVarCounts)
-                {
-                    VarCount1 = 0;
-                    VarCount2 = 0;
-                    foreach (var v in List)
-                    {
-                        if (v.InstanceType == UndertaleInstruction.InstanceType.Global)
-                            VarCount1++;
-                        else if (v.VarID >= 0 && v.InstanceType == UndertaleInstruction.InstanceType.Self)
-                            VarCount2++;
-                    }
-                }
-                else
-                {
-                    int count = -1;
-                    foreach (var v in List)
-                    {
-                        if (v.InstanceType == UndertaleInstruction.InstanceType.Global ||
-                            v.InstanceType == UndertaleInstruction.InstanceType.Self)
-                            count = Math.Max(count, v.VarID);
-                    }
-                    VarCount1 = (uint)(count + 1);
-                    VarCount2 = VarCount1;
-                }
-
                 writer.Write(VarCount1);
                 writer.Write(VarCount2);
                 writer.Write(MaxLocalVarCount);

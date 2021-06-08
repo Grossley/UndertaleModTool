@@ -157,10 +157,10 @@ namespace UndertaleModLib.Models
             writer.Write(DefaultWindowWidth);
             writer.Write(DefaultWindowHeight);
             writer.Write((uint)Info);
+            writer.Write(LicenseCRC32);
             if (LicenseMD5.Length != 16)
                 throw new IOException("LicenseMD5 has invalid length");
             writer.Write(LicenseMD5);
-            writer.Write(LicenseCRC32);
             writer.Write(Timestamp);
             writer.WriteUndertaleString(DisplayName);
 
@@ -241,8 +241,8 @@ namespace UndertaleModLib.Models
             DefaultWindowWidth = reader.ReadUInt32();
             DefaultWindowHeight = reader.ReadUInt32();
             Info = (InfoFlags)reader.ReadUInt32();
-            LicenseMD5 = reader.ReadBytes(16);
             LicenseCRC32 = reader.ReadUInt32();
+            LicenseMD5 = reader.ReadBytes(16);
             Timestamp = reader.ReadUInt64();
             DisplayName = reader.ReadUndertaleString();
             ActiveTargets = reader.ReadUInt64();
@@ -358,6 +358,8 @@ namespace UndertaleModLib.Models
         public uint LoadAlpha { get; set; } = 255;
         public UndertaleSimpleList<Constant> Constants { get; private set; } = new UndertaleSimpleList<Constant>();
 
+        public bool NewFormat { get; set; } = true;
+
         [PropertyChanged.AddINotifyPropertyChangedInterface]
         public class Constant : UndertaleObject
         {
@@ -379,7 +381,7 @@ namespace UndertaleModLib.Models
 
         public void Serialize(UndertaleWriter writer)
         {
-            if (writer.undertaleData.GeneralInfo.BytecodeVersion >= 14)
+            if (NewFormat)
             {
                 writer.Write(Unknown1);
                 writer.Write(Unknown2);
@@ -439,7 +441,9 @@ namespace UndertaleModLib.Models
 
         public void Unserialize(UndertaleReader reader)
         {
-            if (reader.undertaleData.GeneralInfo.BytecodeVersion >= 14)
+            NewFormat = reader.ReadInt32() == int.MinValue;
+            reader.Position -= 4;
+            if (NewFormat)
             {
                 Unknown1 = reader.ReadUInt32();
                 Unknown2 = reader.ReadUInt32();

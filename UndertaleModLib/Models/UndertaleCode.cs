@@ -97,88 +97,6 @@ namespace UndertaleModLib.Models
             };
         }
 
-        public static int CalculateStackDiff(UndertaleInstruction instr)
-        {
-            switch (instr.Kind)
-            {
-                // TODO! Opcode.CallV
-
-                case Opcode.Neg:
-                case Opcode.Not:
-                    return 0;
-
-                case Opcode.Dup:
-                    return 1 + instr.Extra;
-
-                case Opcode.Ret:
-                    return -1;
-
-                case Opcode.Exit:
-                    return 0;
-
-                case Opcode.Popz:
-                    return -1;
-
-                case Opcode.Conv:
-                    return 0;
-
-                case Opcode.Mul:
-                case Opcode.Div:
-                case Opcode.Rem:
-                case Opcode.Mod:
-                case Opcode.Add:
-                case Opcode.Sub:
-                case Opcode.And:
-                case Opcode.Or:
-                case Opcode.Xor:
-                case Opcode.Shl:
-                case Opcode.Shr:
-                case Opcode.Cmp:
-                    return -2 + 1;
-
-                case Opcode.B:
-                    return 0;
-                case Opcode.Bt:
-                case Opcode.Bf:
-                case Opcode.PushEnv:
-                    return -1;
-                case Opcode.PopEnv:
-                    return 0;
-
-                case Opcode.Pop:
-                    if (instr.Destination == null)
-                        return instr.SwapExtra - 6;
-                    if (instr.Destination.Type == VariableType.StackTop)
-                        return -1 - 1;
-                    if (instr.Destination.Type == VariableType.Array)
-                        return -1 - 2;
-                    return -1;
-
-                case Opcode.Push:
-                case Opcode.PushLoc:
-                case Opcode.PushGlb:
-                case Opcode.PushBltn:
-                case Opcode.PushI:
-                    if (instr.Value is Reference<UndertaleVariable>)
-                    {
-                        if ((instr.Value as Reference<UndertaleVariable>).Type == VariableType.StackTop)
-                            return 1 - 1;
-                        if ((instr.Value as Reference<UndertaleVariable>).Type == VariableType.Array)
-                            return 1 - 2;
-                    }
-                    return 1;
-
-                case Opcode.Call:
-                    return -instr.ArgumentsCount + 1;
-
-                case Opcode.Break:
-                    return 0;
-
-                default:
-                    throw new IOException("Unknown opcode " + instr.Kind.ToString().ToUpper());
-            }
-        }
-
         public enum DataType : byte
         {
             Double,
@@ -246,6 +164,8 @@ namespace UndertaleModLib.Models
         public ushort ArgumentsCount { get; set; }
         public byte Extra { get; set; }
         public ushort SwapExtra { get; set; }
+
+        public UndertaleCode Entry { get; set; } // Set for the first instruction
 
         public interface ReferencedObject
         {
@@ -596,7 +516,7 @@ namespace UndertaleModLib.Models
         public void Unserialize(UndertaleReader reader)
         {
             uint instructionStartAddress = reader.Position;
-            reader.ReadByte(); reader.ReadByte(); reader.ReadByte(); // skip for now, we'll read them later
+            reader.Position += 3; // skip for now, we'll read them later
             byte kind = reader.ReadByte();
             if (reader.Bytecode14OrLower)
             {
@@ -697,21 +617,31 @@ namespace UndertaleModLib.Models
                 case InstructionType.ComparisonInstruction:
                     {
                         Extra = reader.ReadByte();
+#if DEBUG
                         if (Extra != 0 && Kind != Opcode.Dup && Kind != Opcode.CallV)
                             throw new IOException("Invalid padding in " + Kind.ToString().ToUpper());
+#endif
                         ComparisonKind = (ComparisonType)reader.ReadByte();
                         //if (!bytecode14 && (Kind == Opcode.Cmp) != ((byte)ComparisonKind != 0))
                         //    throw new IOException("Got unexpected comparison type in " + Kind.ToString().ToUpper() + " (should be only in CMP)");
                         byte TypePair = reader.ReadByte();
                         Type1 = (DataType)(TypePair & 0xf);
                         Type2 = (DataType)(TypePair >> 4);
+#if DEBUG
                         if (GetInstructionType(Kind) == InstructionType.SingleTypeInstruction && Type2 != (byte)0)
                             throw new IOException("Second type should be 0 in " + Kind.ToString().ToUpper());
+#endif
                         //if(reader.ReadByte() != (byte)Kind) throw new Exception("really shouldn't happen");
                         if (reader.Bytecode14OrLower && Kind == Opcode.Cmp)
                             ComparisonKind = (ComparisonType)(reader.ReadByte() - 0x10);
                         else
                             reader.ReadByte();
+
+                        if (Kind == Opcode.And || Kind == Opcode.Or)
+                        {
+                            if (Type1 == DataType.Boolean && Type2 == DataType.Boolean)
+                                reader.undertaleData.ShortCircuit = false;
+                        }
                     }
                     break;
 
@@ -732,9 +662,11 @@ namespace UndertaleModLib.Models
 
                         // The rest is int23 signed value, so make sure
                         uint r = v & 0x003FFFFF;
+#if DEBUG
                         if (JumpOffsetPopenvExitMagic && v != 0xF00000)
                             throw new Exception("Popenv magic doesn't work, call issue #90 again");
                         else
+#endif
                         {
                             if ((v & 0x00C00000) != 0)
                                 r |= 0xFFC00000;
@@ -855,11 +787,9 @@ namespace UndertaleModLib.Models
             return ToString(null);
         }
 
-        public string ToString(UndertaleCode code)
+        public string ToString(UndertaleCode code, List<uint> blocks = null)
         {
             StringBuilder sb = new StringBuilder();
-
-            sb.Append(Address.ToString("D5") + ": ");
 
             string kind = Kind.ToString();
             var type = GetInstructionType(Kind);
@@ -880,10 +810,11 @@ namespace UndertaleModLib.Models
                         sb.Append(Extra.ToString());
                         if (Kind == Opcode.Dup)
                         {
-                            if ((byte)ComparisonKind == 0x88)
+                            if ((byte)ComparisonKind != 0)
                             {
-                                // No idea what this is right now (seems to be used at least with @@GetInstance@@), this is the "temporary" solution
-                                sb.Append(" spec");
+                                // Special dup instruction with extra parameters
+                                sb.Append(' ');
+                                sb.Append((byte)ComparisonKind & 0x7F);
                             }
                         }
                     }
@@ -903,11 +834,15 @@ namespace UndertaleModLib.Models
 
                 case InstructionType.GotoInstruction:
                     sb.Append(' ');
-                    string tgt = (Address + JumpOffset).ToString("D5");
+                    string tgt;
                     if (code != null && Address + JumpOffset == code.Length / 4)
-                        tgt = "func_end";
-                    if (JumpOffsetPopenvExitMagic)
-                        tgt = "[drop]";
+                        tgt = "[end]";
+                    else if (JumpOffsetPopenvExitMagic)
+                        tgt = "<drop>";
+                    else if (blocks != null)
+                        tgt = "[" + blocks.IndexOf((uint)(Address + JumpOffset)) + "]";
+                    else
+                        tgt = (Address + JumpOffset).ToString("D5");
                     sb.Append(tgt);
                     break;
 
@@ -1014,11 +949,15 @@ namespace UndertaleModLib.Models
     {
         public UndertaleString Name { get; set; }
         public uint Length { get; set; }
-        public uint LocalsCount { get; set; }
+        public uint LocalsCount { get; set; } // Warning: Actually a ushort, left this way for compatibility
+        public ushort ArgumentsCount { get; set; }
+        public bool WeirdLocalsFlag { get; set; }
         public uint Offset { get; set; }
         public List<UndertaleInstruction> Instructions { get; } = new List<UndertaleInstruction>();
-        public bool NoLocals { get; set; }
+        public bool WeirdLocalFlag { get; set; }
         public bool DuplicateEntry { get; set; } = false;
+
+        public List<UndertaleCode> Duplicates { get; set; } = new List<UndertaleCode>();
 
         internal uint _BytecodeAbsoluteAddress;
         internal byte[] _UnsupportedBuffer;
@@ -1071,7 +1010,8 @@ namespace UndertaleModLib.Models
             else
             {
                 writer.Write(Length);
-                writer.Write(LocalsCount);
+                writer.Write((ushort)LocalsCount);
+                writer.Write((ushort)(ArgumentsCount | (WeirdLocalFlag ? (ushort)0x8000 : 0)));
                 int BytecodeRelativeAddress = (int)_BytecodeAbsoluteAddress - (int)writer.Position;
                 writer.Write(BytecodeRelativeAddress);
                 writer.Write(Offset);
@@ -1099,17 +1039,26 @@ namespace UndertaleModLib.Models
                     instr.Address = a;
                     Instructions.Add(instr);
                 }
-                NoLocals = true;
+                WeirdLocalFlag = true;
             }
             else
             {
-                LocalsCount = reader.ReadUInt32();
+                LocalsCount = reader.ReadUInt16();
+                ArgumentsCount = reader.ReadUInt16();
+                if ((ArgumentsCount & 0x8000) == 0x8000)
+                {
+                    ArgumentsCount &= 0x7FFF;
+                    WeirdLocalFlag = true;
+                }
                 int BytecodeRelativeAddress = reader.ReadInt32();
                 _BytecodeAbsoluteAddress = (uint)((int)reader.Position - 4 + BytecodeRelativeAddress);
                 uint here = reader.Position;
                 reader.Position = _BytecodeAbsoluteAddress;
-                if (Length > 0 && reader.GMS2_3 && reader.GetOffsetMap().ContainsKey(_BytecodeAbsoluteAddress))
+                if (Length > 0 && reader.GMS2_3 && reader.GetOffsetMap().TryGetValue(_BytecodeAbsoluteAddress, out var i))
+                {
                     DuplicateEntry = true;
+                    (i as UndertaleInstruction).Entry.Duplicates.Add(this);
+                }
                 Instructions.Clear();
                 while (reader.Position < _BytecodeAbsoluteAddress + Length)
                 {
@@ -1118,6 +1067,8 @@ namespace UndertaleModLib.Models
                     instr.Address = a;
                     Instructions.Add(instr);
                 }
+                if (!DuplicateEntry && Instructions.Count != 0)
+                    Instructions[0].Entry = this;
                 reader.Position = here;
                 Offset = reader.ReadUInt32();
             }
@@ -1167,47 +1118,6 @@ namespace UndertaleModLib.Models
         public IList<UndertaleVariable> FindReferencedLocalVars()
         {
             return FindReferencedVars().Where((x) => x.InstanceType == UndertaleInstruction.InstanceType.Local).ToList();
-        }
-
-        public string GenerateLocalVarDefinitions(IList<UndertaleVariable> vars, UndertaleCodeLocals locals)
-        {
-            if (NoLocals)
-                return "";
-            if (locals == null)
-                return "Missing code locals- possibly due to unsupported bytecode version or brand new code entry.\n";
-
-            StringBuilder sb = new StringBuilder();
-
-            var referenced = FindReferencedLocalVars();
-            if (locals.Name != Name)
-                throw new Exception("Name of the locals block does not match name of the code block");
-            foreach (var arg in locals.Locals)
-            {
-                sb.Append(".localvar " + arg.Index + " " + arg.Name.Content);
-                var refvar = referenced.Where((x) => x.Name == arg.Name && x.VarID == arg.Index).FirstOrDefault();
-                if (refvar != null)
-                {
-                    sb.Append(" " + vars.IndexOf(refvar));
-                }
-                sb.Append('\n');
-            }
-
-            return sb.ToString();
-        }
-
-        public string Disassemble(IList<UndertaleVariable> vars, UndertaleCodeLocals locals)
-        {
-            StringBuilder sb = new StringBuilder();
-            if (locals == null && !NoLocals)
-                sb.Append("; WARNING: Missing code locals, possibly due to unsupported bytecode version or a brand new code entry.\n");
-            else
-                sb.Append(GenerateLocalVarDefinitions(vars, locals));
-            foreach (var inst in Instructions)
-            {
-                sb.Append(inst.ToString(this));
-                sb.Append('\n');
-            }
-            return sb.ToString();
         }
 
         public void Append(IList<UndertaleInstruction> instructions)

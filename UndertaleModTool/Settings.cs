@@ -15,11 +15,12 @@ namespace UndertaleModTool
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UndertaleModTool");
         public static string ProfilesFolder = Path.Combine(AppDataFolder, "Profiles");
 
+        public string Version { get; set; } = MainWindow.Version;
         public string GraphVizPath { get; set; } = ".\\graphviz\\bin";
         public string GameMakerStudioPath { get; set; } = "%appdata%\\GameMaker-Studio";
         public string GameMakerStudio2RuntimesPath { get; set; } = "%systemdrive%\\ProgramData\\GameMakerStudio2\\Cache\\runtimes"; /* Using %systemdrive% here fixes the runtimes not being found when the system drive is not C:\\ */
         public bool AssetOrderSwappingEnabled { get; set; } = false;
-        public bool ProfileModeEnabled { get; set; } = true;
+        public bool ProfileModeEnabled { get; set; } = false;
         public bool ProfileMessageShown { get; set; } = false;
 
         // The disk space impact will likely be small for the average user, it should be turned off by default for now.
@@ -36,6 +37,7 @@ namespace UndertaleModTool
         // This comment should be cleared in the event that the remedies described are implemented.
 
         public bool DeleteOldProfileOnSave { get; set; } = false;
+        public bool WarnOnClose { get; set; } = true;
 
         public static Settings Instance;
 
@@ -65,6 +67,19 @@ namespace UndertaleModTool
                 }
                 byte[] bytes = File.ReadAllBytes(path);
                 JsonSerializer.Deserialize<Settings>(bytes, JsonOptions);
+
+                // Handle upgrading settings here when needed
+                bool changed = false;
+                if (Instance.Version != MainWindow.Version)
+                {
+                    changed = true;
+                    // TODO when it becomes necessary
+                }
+
+                // Update the version to this version
+                Instance.Version = MainWindow.Version;
+                if (changed)
+                    Save();
             } catch (Exception e)
             {
                 MessageBox.Show($"Failed to load settings.json! Using default values.\n{e.Message}");

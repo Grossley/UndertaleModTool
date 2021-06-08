@@ -63,6 +63,17 @@ namespace UndertaleModTool
                 File.Delete(path);
             }
         }
+        public void ReapplyProfileCode()
+        {
+            foreach (UndertaleCode code in Data.Code)
+            {
+                string path = Path.Combine(ProfilesFolder, Data.ToolInfo.CurrentMD5, "Temp", code.Name.Content + ".gml");
+                if (File.Exists(path))
+                {
+                    ImportGMLFile(path, false, false);
+                }
+            }
+        }
 
         public string GetPassBack(string decompiled_text, string keyword, string replacement, bool case_sensitive = false, bool isRegex = false)
         {
@@ -74,7 +85,7 @@ namespace UndertaleModTool
                 if (case_sensitive)
                     passBack = decompiled_text.Replace(keyword, replacement);
                 else
-                    passBack = Regex.Replace(decompiled_text, Regex.Escape(keyword), Regex.Escape(replacement), RegexOptions.IgnoreCase);
+                    passBack = Regex.Replace(decompiled_text, Regex.Escape(keyword), replacement.Replace("$", "$$"), RegexOptions.IgnoreCase);
             }
             else
             {
@@ -115,7 +126,7 @@ namespace UndertaleModTool
             {
                 try
                 {
-                    string path = Path.Combine(ProfilesFolder, Data.ToolInfo.CurrentMD5, codeName + ".gml");
+                    string path = Path.Combine(ProfilesFolder, Data.ToolInfo.CurrentMD5, "Temp", codeName + ".gml");
                     if (File.Exists(path))
                     {
                         passBack = GetPassBack(File.ReadAllText(path), keyword, replacement, case_sensitive, isRegex);
