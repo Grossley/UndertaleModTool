@@ -15,26 +15,47 @@ if (assetNamePath == null)
 
 string[] lines = File.ReadAllLines(assetNamePath);
 
+void Reorganize<T>(IList<T> list, List<string> order) where T : UndertaleNamedResource, new()
+{
+    Dictionary<string, T> temp = new Dictionary<string, T>();
+    for (int i = 0; i < list.Count; i++)
+    {
+        T asset = list[i];
+        string assetName = asset.Name?.Content;
+        if (order.Contains(assetName))
+        {
+            temp[assetName] = asset;
+        }
+    }
+    
+    List<T> addOrder = new List<T>();
+    for (int i = order.Count - 1; i >= 0; i--)
+    {
+        T asset;
+        try
+        {
+            asset = temp[order[i]];
+        } catch (Exception e)
+        {
+            throw new Exception("Missing asset with name \"" + order[i] + "\"");
+        }
+        addOrder.Add(asset);
+    }
+    
+    foreach (T asset in addOrder)
+        list.Remove(asset);
+    foreach (T asset in addOrder)
+        list.Insert(0, asset);
+}
+
 string currentType;
 List<string> currentList = new List<string>();
-
-foreach (string line in lines)
-{
-    if (line.StartsWith("@@") && line.EndsWith("@@"))
-    {
-        SubmitList();
-        currentType = line.Substring(2, line.Length - 4).ToLower();
-        currentList.Clear();
-    } else
-        currentList.Add(line.Trim());
-}
-SubmitList();
 
 void SubmitList()
 {
     if (currentList.Count == 0)
         return;
-
+    
     switch (currentType)
     {
         case "sounds":
@@ -73,37 +94,14 @@ void SubmitList()
     }
 }
 
-void Reorganize<T>(IList<T> list, List<string> order) where T : UndertaleNamedResource, new()
+foreach (string line in lines)
 {
-    Dictionary<string, T> temp = new Dictionary<string, T>();
-    for (int i = 0; i < list.Count; i++)
+    if (line.StartsWith("@@") && line.EndsWith("@@"))
     {
-        T asset = list[i];
-        string assetName = asset.Name?.Content;
-        if (order.Contains(assetName))
-        {
-            temp[assetName] = asset;
-        }
-    }
-
-    List<T> addOrder = new List<T>();
-    for (int i = order.Count - 1; i >= 0; i--)
-    {
-        T asset;
-        try
-        {
-            asset = temp[order[i]];
-        }
-        catch (Exception e)
-        {
-            throw new Exception("Missing asset with name \"" + order[i] + "\"");
-        }
-        addOrder.Add(asset);
-    }
-
-    foreach (T asset in addOrder)
-        list.Remove(asset);
-    foreach (T asset in addOrder)
-        list.Insert(0, asset);
+        SubmitList();
+        currentType = line.Substring(2, line.Length - 4).ToLower();
+        currentList.Clear();
+    } else
+        currentList.Add(line.Trim());
 }
-
+SubmitList();

@@ -1112,8 +1112,9 @@ namespace UndertaleModLib.Decompiler
             public override Statement CleanStatement(DecompileContext context, BlockHLStatement block)
             {
                 Value = Value.CleanExpression(context, block);
-                if (Destination.Var.Name?.Content == "$$$$temp$$$$")
-                    context.CompilerTempVar = this;
+                if (Destination.Var != null)
+                    if (Destination.Var.Name?.Content == "$$$$temp$$$$")
+                        context.CompilerTempVar = this;
 
                 return this;
             }
@@ -1218,10 +1219,10 @@ namespace UndertaleModLib.Decompiler
                 if (AlternateFunction != null)
                     return String.Format("{0}({1})", AlternateFunction.ToString(context), argumentString.ToString());
 
-                if (Function.Name.Content == "@@NewGMLArray@@") // Special case in GMS2.
+                if (Function != null && Function.Name.Content == "@@NewGMLArray@@") // Special case in GMS2.
                     return "[" + argumentString.ToString() + "]";
 
-                return String.Format("{0}({1})", Function.Name.Content, argumentString.ToString());
+                return String.Format("{0}({1})", (Function != null ? Function.Name.Content : "null"), argumentString.ToString());
             }
 
             public override Statement CleanStatement(DecompileContext context, BlockHLStatement block)
@@ -1245,7 +1246,8 @@ namespace UndertaleModLib.Decompiler
             {
                 if (Function == null)
                 {
-                    AlternateFunction.DoTypePropagation(context, suggestedType);
+                    if (AlternateFunction != null)
+                        AlternateFunction.DoTypePropagation(context, suggestedType);
                     AssetIDType[] args = new AssetIDType[Arguments.Count];
                     for (var i = 0; i < Arguments.Count; i++)
                         Arguments[i].DoTypePropagation(context, args[i]);
@@ -1316,7 +1318,7 @@ namespace UndertaleModLib.Decompiler
 
             public override Statement CleanStatement(DecompileContext context, BlockHLStatement block)
             {
-                if (Var.Name?.Content == "$$$$temp$$$$" && context.CompilerTempVar != null)
+                if (Var != null && Var.Name?.Content == "$$$$temp$$$$" && context.CompilerTempVar != null)
                 {
                     block.Statements.Remove(context.CompilerTempVar);
                     return context.CompilerTempVar.Value.CleanStatement(context, block);
@@ -1354,7 +1356,7 @@ namespace UndertaleModLib.Decompiler
 
             public override string ToString(DecompileContext context)
             {
-                string name = Var.Name.Content;
+                string name = (Var != null ? Var.Name.Content : "null");
                 if (context.Data?.GMS2_3 == true)
                 {
                     if (ArrayIndices != null)
@@ -1407,15 +1409,39 @@ namespace UndertaleModLib.Decompiler
                         e?.DoTypePropagation(context, AssetIDType.Other);
                 }
 
-                AssetIDType current = context.assetTypes.ContainsKey(Var) ? context.assetTypes[Var] : AssetIDType.Other;
+                AssetIDType current;
+                try
+                {
+                    current = context.assetTypes.ContainsKey(Var) ? context.assetTypes[Var] : AssetIDType.Other;
+                }
+                catch
+                {
+                    current = AssetIDType.Other;
+                }
                 if (current == AssetIDType.Other && suggestedType != AssetIDType.Other)
                     current = suggestedType;
-                AssetIDType builtinSuggest = AssetTypeResolver.AnnotateTypeForVariable(context, Var.Name.Content);
+                AssetIDType builtinSuggest;
+                try
+                {
+                    builtinSuggest = AssetTypeResolver.AnnotateTypeForVariable(context, Var.Name.Content);
+                }
+                catch
+                {
+                    builtinSuggest = AssetIDType.Other;
+                }
                 if (builtinSuggest != AssetIDType.Other)
                     current = builtinSuggest;
 
                 if ((VarType != UndertaleInstruction.VariableType.Array || (ArrayIndices != null && !(ArrayIndices[0] is ExpressionConstant))))
-                    context.assetTypes[Var] = current; // This is a messy fix to arrays messing up exported variable types.
+                {
+                    try
+                    {
+                        context.assetTypes[Var] = current; // This is a messy fix to arrays messing up exported variable types
+                    }
+                    catch
+                    {
+                    }
+                }
                 return current;
             }
 

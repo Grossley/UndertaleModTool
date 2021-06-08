@@ -291,15 +291,73 @@ namespace UndertaleModLib.Models
                     return;
                 Reference<T> reference = null;
                 uint addr = reader.GetAddressForUndertaleObject(obj.FirstAddress);
-                for (int i = 0; i < obj.Occurrences; i++)
+                try
                 {
-                    reference = reader.GetUndertaleObjectAtAddress<UndertaleInstruction>(addr).GetReference<T>(obj is UndertaleFunction);
-                    if (reference == null)
-                        throw new IOException("Failed to find reference at " + addr);
-                    reference.Target = obj;
-                    addr += (uint)reference.NextOccurrenceOffset;
+                    for (int i = 0; i < obj.Occurrences; i++)
+                    {
+                        UndertaleInstruction a;
+                        UndertaleVariable b;
+                        try
+                        {
+                            a = reader.GetUndertaleObjectAtAddress<UndertaleInstruction>(addr);
+                            reference = a.GetReference<T>(obj is UndertaleFunction);
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                var ab = reader.GetUndertaleObjectAtAddress<Reference<UndertaleVariable>>(addr);
+                                throw new IOException("Reference<UndertaleVariable> ADDR: " + addr + " Next: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null") + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null") + " Target: " + (ab.Target != null ? ab.Target.ToString() : "null") + " Name: " + ab.ToString());
+                            }
+                            catch (InvalidCastException ex)
+                            {
+                                try
+                                {
+                                    var abc = reader.GetUndertaleObjectAtAddress<UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>>(addr);
+                                    string CachedIdString = (abc.CachedId != null ? abc.CachedId.ToString() : "null");
+                                    string ResourceString = (abc.Resource != null ? abc.Resource.ToString() : "null");
+                                    throw new IOException("UndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr + " CachedIdString: " + CachedIdString + " ResourceString: " + ResourceString + " Target: " + (abc.Resource?.ToString()));
+                                }
+                                catch (InvalidCastException exc)
+                                {
+                                    try
+                                    {
+                                        var abcd = reader.GetUndertaleObjectAtAddress<Reference<UndertaleFunction>>(addr);
+                                        throw new IOException("Reference<UndertaleFunction> ADDR: " + addr + " Next: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null") + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null") + " Target: " + (abcd.Target != null ? abcd.Target.ToString() : "null") + " Name: " + abcd.ToString());
+                                    }
+                                    catch (InvalidCastException exce)
+                                    {
+                                        var abcde = reader.GetUndertaleObjectAtAddress<UndertaleCode>(addr);
+                                        throw new IOException("UndertaleCode ADDR: " + addr 
+                                        + " Name: " + (abcde.Name != null ? abcde.Name.Content : "null") 
+                                        + " Length: " + (abcde.Length != null ? abcde.Length.ToString() : "null") 
+                                        + " Locals Count: " + (abcde.LocalsCount != null ? abcde.LocalsCount.ToString() : "null") 
+                                        + " Arguments Count: " + (abcde.ArgumentsCount != null ? abcde.ArgumentsCount.ToString() : "null") 
+                                        + " WeirdLocalsFlag: " + (abcde.WeirdLocalsFlag != null ? abcde.WeirdLocalsFlag.ToString() : "null") 
+                                        + " Offset: " + (abcde.Offset != null ? abcde.Offset.ToString() : "null") 
+                                        + " WeirdLocalFlag: " + (abcde.WeirdLocalFlag != null ? abcde.WeirdLocalFlag.ToString() : "null") 
+                                        + " DuplicateEntry: " + (abcde.DuplicateEntry != null ? abcde.DuplicateEntry.ToString() : "null") 
+                                        + " Name of ABCDE: " + abcde.ToString());
+                                    }
+                                }
+                            }
+                        }
+                        if (reference != null)
+                        {
+                            //    throw new IOException("Failed to find reference at " + addr);
+                            reference.Target = obj;
+                            addr += (uint)reference.NextOccurrenceOffset;
+                        }
+                    }
                 }
-                obj.NameStringID = (int)reference.NextOccurrenceOffset;
+                catch (Exception ex)
+                {
+                    File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"), ex.ToString() + "\r\n");
+                }
+                if (reference != null)
+                    obj.NameStringID = (int)reference.NextOccurrenceOffset;
+                else
+                    obj.NameStringID = 0;
             }
         }
 

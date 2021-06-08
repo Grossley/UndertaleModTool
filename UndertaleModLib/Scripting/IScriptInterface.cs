@@ -38,7 +38,6 @@ namespace UndertaleModLib.Scripting
         void SetFinishedMessage(bool isFinishedMessageEnabled);
         void UpdateProgressBar(string message, string status, double progressValue, double maxValue);
         void HideProgressBar();
-        UndertaleObject DeepCopy(UndertaleObject obj);
 
         void ChangeSelection(object newsel);
 

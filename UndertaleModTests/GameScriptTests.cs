@@ -32,9 +32,6 @@ namespace UndertaleModTests
         public void EnsureDataLoaded()
         {
         }
-        public UndertaleObject DeepCopy(UndertaleObject obj)
-        {
-        }
         public void ReplaceTempWithMain(bool ImAnExpertBTW = false)
         {
         }
