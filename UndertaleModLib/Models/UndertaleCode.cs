@@ -312,11 +312,12 @@ namespace UndertaleModLib.Models
                                 reference = cachedReference;
                                 reference.NextOccurrenceOffset = ab.NextOccurrenceOffset;
                                 cachedReference = reference;
-                                appendMe += "\r\nReference<UndertaleVariable> ADDR: " + addr.ToString("X8")
+                                File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                "\r\nReference<UndertaleVariable> ADDR: " + addr.ToString("X8")
                                 + " NextOccurrenceOffset: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null")
                                 + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null")
                                 + " Target: " + (ab.Target != null ? ab.Target.ToString() : "null")
-                                + " Name: " + ab.ToString();
+                                + " Name: " + ab.ToString());
                             }
                             catch (InvalidCastException ex)
                             {
@@ -328,9 +329,10 @@ namespace UndertaleModLib.Models
                                     cachedReference = reference;
                                     string CachedIdString = (abc.CachedId != null ? abc.CachedId.ToString() : "null");
                                     string ResourceString = (abc.Resource != null ? abc.Resource.ToString() : "null");
-                                    appendMe += ("\r\nUndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr.ToString("X8")
+                                    File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                    "\r\nUndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr.ToString("X8")
                                     + " CachedIdString: " + CachedIdString
-                                    + "(" + (reader.undertaleData.Strings != null ? reader.undertaleData.Strings[abc.CachedId].Content : "reader.undertaleData.Strings[" + abc.CachedId.ToString() + "].Content")
+                                    + " (" + (reader.undertaleData.Strings != null ? reader.undertaleData.Strings[abc.CachedId].Content : "reader.undertaleData.Strings[" + abc.CachedId.ToString() + "].Content")
                                     + ") ResourceString: " + ResourceString
                                     + " Target: " + (abc.Resource?.ToString()));
                                 }
@@ -342,7 +344,8 @@ namespace UndertaleModLib.Models
                                         reference = cachedReference;
                                         reference.NextOccurrenceOffset = abcd.NextOccurrenceOffset;
                                         cachedReference = reference;
-                                        appendMe += ("\r\nReference<UndertaleFunction> ADDR: " + addr.ToString("X8")
+                                        File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                        "\r\nReference<UndertaleFunction> ADDR: " + addr.ToString("X8")
                                         + " NextOccurrenceOffset: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null")
                                         + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null")
                                         + " Target: " + (abcd.Target != null ? abcd.Target.ToString() : "null")
@@ -354,7 +357,8 @@ namespace UndertaleModLib.Models
                                         reference = cachedReference;
                                         reference.NextOccurrenceOffset = 0;
                                         cachedReference = reference;
-                                        appendMe += ("\r\nUndertaleCode ADDR: " + addr.ToString("X8")
+                                        File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                        "\r\nUndertaleCode ADDR: " + addr.ToString("X8")
                                         + " Name: " + (abcde.Name != null ? abcde.Name.Content : "null")
                                         + " Length: " + (abcde.Length != null ? abcde.Length.ToString() : "null")
                                         + " LocalsCount: " + (abcde.LocalsCount != null ? abcde.LocalsCount.ToString() : "null")
@@ -380,7 +384,7 @@ namespace UndertaleModLib.Models
                 {
                     File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"), ex.ToString() + "\r\n");
                 }
-                File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"), appendMe + "\r\n");
+                File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"), "\r\n");
                 if (reference != null)
                     obj.NameStringID = (int)reference.NextOccurrenceOffset;
                 else
