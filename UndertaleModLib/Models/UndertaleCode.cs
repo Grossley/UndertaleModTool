@@ -391,6 +391,128 @@ namespace UndertaleModLib.Models
                 else
                     obj.NameStringID = 0;
             }
+            //            public static void ParseReferenceChain(UndertaleReader reader, T obj)
+            //            {
+            //                for (var i = 0; i < reader.undertaleData.Variables.Count; i++)
+            //                {
+            //                    reader.undertaleData.Variables[i].NameStringID = reader.undertaleData.Strings.IndexOf(reader.undertaleData.Variables[i].Name);
+            //                }
+            //                for (var i = 0; i < reader.undertaleData.Functions.Count; i++)
+            //                {
+            //                    reader.undertaleData.Functions[i].NameStringID = reader.undertaleData.Strings.IndexOf(reader.undertaleData.Functions[i].Name);
+            //                }
+            //                if (reader.undertaleData.UnsupportedBytecodeVersion)
+            //                    return;
+            //                Reference<T> reference = null;
+            //                Reference<T> cachedReference = new Reference<T>();
+            //                string appendMe = "";
+            //                string excPath = "%USERPROFILE%/Desktop/exception_11.txt";
+            //                uint addr = reader.GetAddressForUndertaleObject(obj.FirstAddress);
+            //                try
+            //                {
+            //                    for (int i = 0; i < obj.Occurrences; i++)
+            //                    {
+            //                        UndertaleInstruction a;
+            //                        UndertaleVariable b;
+            //                        try
+            //                        {
+            //                            a = reader.GetUndertaleObjectAtAddress<UndertaleInstruction>(addr);
+            //                            reference = a.GetReference<T>(obj is UndertaleFunction);
+            //                            File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
+            //                            "\r\nReference<T> ADDR: " + addr.ToString("X8")
+            //                            + " NextOccurrenceOffset: " + (reference.NextOccurrenceOffset != null ? reference.NextOccurrenceOffset.ToString() : "null")
+            //                            + " Type: " + (reference.Type != null ? reference.Type.ToString() : "null")
+            //                            + " Target: " + (reference.Target != null ? reference.Target.ToString() : "null")
+            //                            + " Name: " + reference.ToString());
+            //                            cachedReference = reference;
+            //                        }
+            //                        catch
+            //                        {
+            //                            try
+            //                            {
+            //                                var ab = reader.GetUndertaleObjectAtAddress<Reference<UndertaleVariable>>(addr);
+            //                                reference = cachedReference;
+            //                                reference.NextOccurrenceOffset = ab.NextOccurrenceOffset;
+            //                                cachedReference = reference;
+            //                                File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
+            //                                "\r\nReference<UndertaleVariable> ADDR: " + addr.ToString("X8")
+            //                                + " NextOccurrenceOffset: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null")
+            //                                + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null")
+            //                                + " Target: " + (ab.Target != null ? ab.Target.ToString() : "null")
+            //                                + " Name: " + ab.ToString());
+            //                            }
+            //                            catch (InvalidCastException ex)
+            //                            {
+            //                                try
+            //                                {
+            //                                    var abc = reader.GetUndertaleObjectAtAddress<UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>>(addr);
+            //                                    reference = cachedReference;
+            //                                    reference.NextOccurrenceOffset = 0;
+            //                                    cachedReference = reference;
+            //                                    string CachedIdString = (abc.CachedId != null ? abc.CachedId.ToString() : "null");
+            //                                    string ResourceString = (abc.Resource != null ? abc.Resource.ToString() : "null");
+            //                                    File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
+            //                                    "\r\nUndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr.ToString("X8")
+            //                                    + " CachedIdString: " + CachedIdString
+            //                                    + " (" + (reader.undertaleData.Strings != null ? reader.undertaleData.Strings[abc.CachedId].Content : "reader.undertaleData.Strings[" + abc.CachedId.ToString() + "].Content")
+            //                                    + ") ResourceString: " + ResourceString
+            //                                    + " Target: " + (abc.Resource?.ToString()));
+            //                                }
+            //                                catch (InvalidCastException exc)
+            //                                {
+            //                                    try
+            //                                    {
+            //                                        var abcd = reader.GetUndertaleObjectAtAddress<Reference<UndertaleFunction>>(addr);
+            //                                        reference = cachedReference;
+            //                                        reference.NextOccurrenceOffset = abcd.NextOccurrenceOffset;
+            //                                        cachedReference = reference;
+            //                                        File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
+            //                                        "\r\nReference<UndertaleFunction> ADDR: " + addr.ToString("X8")
+            //                                        + " NextOccurrenceOffset: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null")
+            //                                        + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null")
+            //                                        + " Target: " + (abcd.Target != null ? abcd.Target.ToString() : "null")
+            //                                        + " Name: " + abcd.ToString());
+            //                                    }
+            //                                    catch (InvalidCastException exce)
+            //                                    {
+            //                                        var abcde = reader.GetUndertaleObjectAtAddress<UndertaleCode>(addr);
+            //                                        reference = cachedReference;
+            //                                        reference.NextOccurrenceOffset = 0;
+            //                                        cachedReference = reference;
+            //                                        File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
+            //                                        "\r\nUndertaleCode ADDR: " + addr.ToString("X8")
+            //                                        + " Name: " + (abcde.Name != null ? abcde.Name.Content : "null")
+            //                                        + " Length: " + (abcde.Length != null ? abcde.Length.ToString() : "null")
+            //                                        + " LocalsCount: " + (abcde.LocalsCount != null ? abcde.LocalsCount.ToString() : "null")
+            //                                        + " ArgumentsCount: " + (abcde.ArgumentsCount != null ? abcde.ArgumentsCount.ToString() : "null")
+            //                                        + " WeirdLocalsFlag: " + (abcde.WeirdLocalsFlag != null ? abcde.WeirdLocalsFlag.ToString() : "null")
+            //                                        + " Offset: " + (abcde.Offset != null ? abcde.Offset.ToString() : "null")
+            //                                        + " WeirdLocalFlag: " + (abcde.WeirdLocalFlag != null ? abcde.WeirdLocalFlag.ToString() : "null")
+            //                                        + " DuplicateEntry: " + (abcde.DuplicateEntry != null ? abcde.DuplicateEntry.ToString() : "null")
+            //                                        + " Name of ABCDE: " + abcde.ToString());
+            //                                    }
+            //                                }
+            //                            }
+            //                        }
+            //                        if (reference != null)
+            //                        {
+            //                            //    throw new IOException("Failed to find reference at " + addr);
+            //                            reference.Target = obj;
+            //                            addr += (uint)reference.NextOccurrenceOffset;
+            //                        }
+            //                    }
+            //                }
+            //                catch (Exception ex)
+            //                {
+            //                    File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath), ex.ToString() + "\r\n");
+            //                }
+            //                File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath), "\r\n");
+            //                if (reference != null)
+            //                    obj.NameStringID = (int)reference.NextOccurrenceOffset;
+            //                else
+            //                    obj.NameStringID = 0;
+            //            }
+            //        }
         }
 
         public Reference<T> GetReference<T>(bool allowResolve = false) where T : class, UndertaleObject, ReferencedObject
