@@ -151,6 +151,7 @@ namespace UndertaleModLib.Models
         }
 
         public uint Address { get; internal set; }
+        public static uint CachedAddr = 0;
         public Opcode Kind { get; set; }
         public ComparisonType ComparisonKind { get; set; }
         public DataType Type1 { get; set; }
@@ -175,6 +176,8 @@ namespace UndertaleModLib.Models
         }
         public class Reference<T> : UndertaleObject where T : class, UndertaleObject, ReferencedObject
         {
+            //private static uint CachedAddr;
+
             public uint NextOccurrenceOffset { get; set; } = 0xdead;
             public VariableType Type { get; set; }
             public T Target { get; set; }
@@ -288,8 +291,7 @@ namespace UndertaleModLib.Models
             {
                 if (reader.undertaleData.UnsupportedBytecodeVersion)
                     return;
-                Reference<T> reference = new Reference<T>();
-                Reference<T> reference2 = null;
+                Reference<T> reference = null;
                 Reference<T> cachedReference = new Reference<T>();
                 Reference<UndertaleVariable> ab = null;
                 UndertaleResourceById<UndertaleString, UndertaleChunkSTRG> abc = null;
@@ -308,7 +310,6 @@ namespace UndertaleModLib.Models
                         {
                             a = reader.GetUndertaleObjectAtAddress<UndertaleInstruction>(addr);
                             reference = a.GetReference<T>(obj is UndertaleFunction);
-                            reference2 = a.GetReference<T>(obj is UndertaleFunction);
                         }
                         catch
                         {
@@ -335,12 +336,17 @@ namespace UndertaleModLib.Models
                                 }
                             }
                         }
-                        if (reference2 != null)
+                        if (reference != null)
                         {
-                            reference.Target = reference2.Target;
-                            addr += (uint)reference2.NextOccurrenceOffset;
+                            reference.Target = obj;
+                            addr += (uint)reference.NextOccurrenceOffset;
+                            CachedAddr = (uint)reference.NextOccurrenceOffset;
                         }
-                        else if (ab != null)
+                        else
+                        {
+                            addr += CachedAddr;
+                        }
+                        /*else if (ab != null)
                         {
                             //reference.Target = (T)(UndertaleObject)ab.Target;
                             reference.NextOccurrenceOffset = ab.NextOccurrenceOffset;
@@ -366,7 +372,7 @@ namespace UndertaleModLib.Models
                             reference.NextOccurrenceOffset = abcde.Offset;
                             addr += 0;
                             //addr += (uint)abcde.Offset;
-                        }
+                        }*/
                     }
                 }
                 catch (Exception ex)
