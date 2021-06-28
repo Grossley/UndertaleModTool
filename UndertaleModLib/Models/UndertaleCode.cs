@@ -291,6 +291,7 @@ namespace UndertaleModLib.Models
                 Reference<T> reference = null;
                 Reference<T> cachedReference = new Reference<T>();
                 string appendMe = "";
+                string excPath = "%USERPROFILE%/Desktop/exception.txt";
                 uint addr = reader.GetAddressForUndertaleObject(obj.FirstAddress);
                 try
                 {
@@ -312,7 +313,7 @@ namespace UndertaleModLib.Models
                                 reference = cachedReference;
                                 reference.NextOccurrenceOffset = ab.NextOccurrenceOffset;
                                 cachedReference = reference;
-                                File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
                                 "\r\nReference<UndertaleVariable> ADDR: " + addr.ToString("X8")
                                 + " NextOccurrenceOffset: " + (ab.NextOccurrenceOffset != null ? ab.NextOccurrenceOffset.ToString() : "null")
                                 + " Type: " + (ab.Type != null ? ab.Type.ToString() : "null")
@@ -329,7 +330,7 @@ namespace UndertaleModLib.Models
                                     cachedReference = reference;
                                     string CachedIdString = (abc.CachedId != null ? abc.CachedId.ToString() : "null");
                                     string ResourceString = (abc.Resource != null ? abc.Resource.ToString() : "null");
-                                    File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                    File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
                                     "\r\nUndertaleResourceById<UndertaleString, UndertaleChunkSTRG> ADDR: " + addr.ToString("X8")
                                     + " CachedIdString: " + CachedIdString
                                     + " (" + (reader.undertaleData.Strings != null ? reader.undertaleData.Strings[abc.CachedId].Content : "reader.undertaleData.Strings[" + abc.CachedId.ToString() + "].Content")
@@ -344,7 +345,7 @@ namespace UndertaleModLib.Models
                                         reference = cachedReference;
                                         reference.NextOccurrenceOffset = abcd.NextOccurrenceOffset;
                                         cachedReference = reference;
-                                        File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                        File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
                                         "\r\nReference<UndertaleFunction> ADDR: " + addr.ToString("X8")
                                         + " NextOccurrenceOffset: " + (abcd.NextOccurrenceOffset != null ? abcd.NextOccurrenceOffset.ToString() : "null")
                                         + " Type: " + (abcd.Type != null ? abcd.Type.ToString() : "null")
@@ -357,7 +358,7 @@ namespace UndertaleModLib.Models
                                         reference = cachedReference;
                                         reference.NextOccurrenceOffset = 0;
                                         cachedReference = reference;
-                                        File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"),
+                                        File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath),
                                         "\r\nUndertaleCode ADDR: " + addr.ToString("X8")
                                         + " Name: " + (abcde.Name != null ? abcde.Name.Content : "null")
                                         + " Length: " + (abcde.Length != null ? abcde.Length.ToString() : "null")
@@ -382,9 +383,9 @@ namespace UndertaleModLib.Models
                 }
                 catch (Exception ex)
                 {
-                    File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"), ex.ToString() + "\r\n");
+                    File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath), ex.ToString() + "\r\n");
                 }
-                File.AppendAllText(Environment.ExpandEnvironmentVariables("%USERPROFILE%/Desktop/exception.txt"), "\r\n");
+                File.AppendAllText(Environment.ExpandEnvironmentVariables(excPath), "\r\n");
                 if (reference != null)
                     obj.NameStringID = (int)reference.NextOccurrenceOffset;
                 else
