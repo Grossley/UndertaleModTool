@@ -67,14 +67,10 @@ namespace UndertaleModTool
                 if (donorSND.File != null)
                     nativeSND.File = Data.Strings.MakeString(donorSND.File.Content);
                 nativeSND.Flags = donorSND.Flags;
-                if (donorSND.Effects != null)
-                    nativeSND.Effects = donorSND.Effects;
-                if (donorSND.Volume != null)
-                    nativeSND.Volume = donorSND.Volume;
-                if (donorSND.Preload != null)
-                    nativeSND.Preload = donorSND.Preload;
-                if (donorSND.Pitch != null)
-                    nativeSND.Pitch = donorSND.Pitch;
+                nativeSND.Effects = donorSND.Effects;
+                nativeSND.Volume = donorSND.Volume;
+                nativeSND.Preload = donorSND.Preload;
+                nativeSND.Pitch = donorSND.Pitch;
                 HandleAudioGroups(donorSND, nativeSND);
                 byte[] donorSoundData = GetSoundData(donorSND, DonorData, GetFolder(DonorDataPath));
                 if (donorSoundData != null)
@@ -108,6 +104,7 @@ namespace UndertaleModTool
                         );
                         UndertaleIO.Write(audioGroupWriteStream, audioGroupDat); // Write it to the disk
                         audioGroupWriteStream.Dispose();
+                        nativeSND.GroupID = audioGroupID;
                     }
                     nativeSND.AudioID = audioID;
                     nativeSND.AudioFile = undertaleEmbeddedAudio;
