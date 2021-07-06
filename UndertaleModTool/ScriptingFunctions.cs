@@ -15,13 +15,6 @@ using Newtonsoft.Json;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System.IO.Pipes;
-using System.Windows.Forms;
-using UndertaleModLib;
-using UndertaleModLib.Models;
-using static UndertaleModLib.Models.UndertaleSound;
-using static UndertaleModLib.UndertaleData;
-using System.Collections.Generic;
-using UndertaleModLib.Compiler;
 
 namespace UndertaleModTool
 {
