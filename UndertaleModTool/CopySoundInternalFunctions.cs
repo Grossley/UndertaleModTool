@@ -35,21 +35,17 @@ namespace UndertaleModTool
         public UndertaleData LoadDonorDataFile()
         {
             ScriptMessage("Select the file to copy from");
-
             UndertaleData DonorData = null;
-            string DonorDataPath = PromptLoadFile(null, null);
+            DonorDataPath = PromptLoadFile(null, null);
             if (DonorDataPath == null)
                 throw new System.Exception("The donor data path was not set.");
-
             using (var stream = new FileStream(DonorDataPath, FileMode.Open, FileAccess.Read))
                 DonorData = UndertaleIO.Read(stream, warning => ScriptMessage("A warning occured while trying to load " + DonorDataPath + ":\n" + warning));
             return DonorData;
-
         }
         public List<string> GetSplitStringsList(string assetType)
         {
             ScriptMessage("Enter the object(s) to copy");
-
             List<string> splitStringsList = new List<string>();
             string abc123 = "";
             abc123 = SimpleTextInput("Menu", "Enter name(s) of game objects", abc123, true);
@@ -80,33 +76,33 @@ namespace UndertaleModTool
             return Path.GetDirectoryName(path) + Path.DirectorySeparatorChar;
         }
 
-        public byte[] GetSoundData(UndertaleSound sound, UndertaleData dataToOperateOn)
+        public byte[] GetSoundData(UndertaleSound sound, UndertaleData dataToOperateOn = null, string winFolder = null)
         {
+            if (dataToOperateOn == null)
+                dataToOperateOn = Data;
+            if (winFolder == null)
+                winFolder = GetFolder(FilePath);
             if (sound.AudioFile != null)
                 return sound.AudioFile.Data;
-
             if (sound.GroupID > dataToOperateOn.GetBuiltinSoundGroupID())
             {
-                IList<UndertaleEmbeddedAudio> audioGroup = GetAudioGroupData(sound);
+                IList<UndertaleEmbeddedAudio> audioGroup = GetAudioGroupData(sound, winFolder);
                 if (audioGroup != null)
                     return audioGroup[sound.AudioID].Data;
             }
             return null;
         }
-        public IList<UndertaleEmbeddedAudio> GetAudioGroupData(UndertaleSound sound)
+        public IList<UndertaleEmbeddedAudio> GetAudioGroupData(UndertaleSound sound, string winFolder)
         {
             Dictionary<string, IList<UndertaleEmbeddedAudio>> loadedAudioGroups = null;
             if (loadedAudioGroups == null)
                 loadedAudioGroups = new Dictionary<string, IList<UndertaleEmbeddedAudio>>();
-
             string audioGroupName = sound.AudioGroup != null ? sound.AudioGroup.Name.Content : null;
             if (loadedAudioGroups.ContainsKey(audioGroupName))
                 return loadedAudioGroups[audioGroupName];
-
-            string groupFilePath = winFolder + "audiogroup" + sound.GroupID + ".dat";
+            string groupFilePath = Path.Combine(winFolder, "audiogroup" + sound.GroupID + ".dat");
             if (!File.Exists(groupFilePath))
                 return null; // Doesn't exist.
-
             try
             {
                 UndertaleData data = null;

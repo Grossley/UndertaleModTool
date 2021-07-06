@@ -28,6 +28,8 @@ namespace UndertaleModTool
     // Adding misc. scripting functions here
     public partial class MainWindow : Window, INotifyPropertyChanged, IScriptInterface
     {
+        public string DonorDataPath { get; private set; }
+
         public void SoundCopy()
         {
             EnsureDataLoaded();
@@ -74,6 +76,46 @@ namespace UndertaleModTool
                 if (donorSND.Pitch != null)
                     nativeSND.Pitch = donorSND.Pitch;
                 HandleAudioGroups(donorSND, nativeSND);
+                byte[] donorSoundData = GetSoundData(donorSND, DonorData, GetFolder(DonorDataPath));
+                if (donorSoundData != null)
+                {
+                    UndertaleEmbeddedAudio undertaleEmbeddedAudio = new UndertaleEmbeddedAudio();
+                    undertaleEmbeddedAudio.Data = donorSoundData;
+                    undertaleEmbeddedAudio.Name = new UndertaleString("EmbeddedSound " + Data.EmbeddedAudio.Count.ToString() + " (UndertaleEmbeddedAudio)");
+                    int audioID;
+                    if (nativeSND.AudioGroup == null || nativeSND.AudioGroup.Name.Content == "audiogroup_default" || (!Data.FORM.Chunks.ContainsKey("AGRP")))
+                    {
+                        audioID = Data.EmbeddedAudio.Count;
+                        Data.EmbeddedAudio.Add(undertaleEmbeddedAudio);
+                        nativeSND.GroupID = Data.AudioGroups.IndexOf(nativeSND.AudioGroup);
+                        if (nativeSND.AudioGroup == null)
+                            nativeSND.GroupID = Data.GetBuiltinSoundGroupID();
+                    }
+                    else
+                    {
+                        int audioGroupID = DonorData.AudioGroups.IndexOf(donorSND.AudioGroup);
+                        var audioGroupReadStream =
+                        (
+                            new FileStream(Path.Combine(GetFolder(FilePath), "audiogroup" + audioGroupID.ToString() + ".dat"), FileMode.Open, FileAccess.Read)
+                        ); // Load the audiogroup dat into memory
+                        UndertaleData audioGroupDat = UndertaleIO.Read(audioGroupReadStream); // Load as UndertaleData
+                        audioGroupReadStream.Dispose();
+                        audioGroupDat.EmbeddedAudio.Add(undertaleEmbeddedAudio); // Adds the embeddedaudio entry to the dat data in memory
+                        audioID = audioGroupDat.EmbeddedAudio.Count - 1;
+                        var audioGroupWriteStream =
+                        (
+                            new FileStream(Path.Combine(GetFolder(FilePath), "audiogroup" + audioGroupID.ToString() + ".dat"), FileMode.Create)
+                        );
+                        UndertaleIO.Write(audioGroupWriteStream, audioGroupDat); // Write it to the disk
+                        audioGroupWriteStream.Dispose();
+                    }
+                    nativeSND.AudioID = audioID;
+                    nativeSND.AudioFile = undertaleEmbeddedAudio;
+                }
+                else
+                {
+                    ScriptError("donorSoundData is null!");
+                }
             }
         }
         public void ProcessAllSoundsToUseAudioGroupDefault()
@@ -112,9 +154,12 @@ namespace UndertaleModTool
                         }
                         File.WriteAllBytes(Path.Combine(GetFolder(FilePath), "audiogroup" + Data.AudioGroups.Count.ToString() + ".dat"), Convert.FromBase64String("Rk9STQwAAABBVURPBAAAAAAAAAA="));
                     }
-                    var newAudioGroup = new UndertaleAudioGroup();
-                    newAudioGroup.Name = Data.Strings.MakeString(donorSND.AudioGroup.Name.Content);
-                    Data.AudioGroups.Add(newAudioGroup);
+                    if (!(donorSND.AudioGroup.Name.Content == "audiogroup_default" && Data.AudioGroups.ByName("audiogroup_default") == null))
+                    {
+                        var newAudioGroup = new UndertaleAudioGroup();
+                        newAudioGroup.Name = Data.Strings.MakeString(donorSND.AudioGroup.Name.Content);
+                        Data.AudioGroups.Add(newAudioGroup);
+                    }
                 }
                 else
                     nativeSND.AudioGroup = audoToGive;
