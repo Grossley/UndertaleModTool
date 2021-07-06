@@ -27,6 +27,8 @@ namespace UndertaleModLib.Scripting
 
         void ScriptMessage(string message);
         void SetUMTConsoleText(string message);
+        void SoundCopy();
+        void SoundCopyInternal();
         bool ScriptQuestion(string message);
         void ScriptError(string error, string title = "Error", bool SetConsoleText = true);
         void ScriptOpenURL(string url);

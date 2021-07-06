@@ -35,6 +35,12 @@ namespace UndertaleModTests
         public void EnsureDataLoaded()
         {
         }
+        public void SoundCopy()
+        {
+        }
+        public void SoundCopyInternal()
+        {
+        }
         public void ReplaceTempWithMain(bool ImAnExpertBTW = false)
         {
         }

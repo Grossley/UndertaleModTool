@@ -3544,6 +3544,14 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
+		<None Update="Repackers\SoundCopy.csx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
+		<None Update="Repackers\SoundCopyInternal.csx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
 		<EmbeddedResource Include="Resources\GML.xshd" />
 		<EmbeddedResource Include="Resources\VMASM.xshd" />
 		<None Update="Repackers\ReduceEmbeddedTexturePages.csx">
